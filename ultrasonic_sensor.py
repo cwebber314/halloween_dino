@@ -2,15 +2,16 @@ from __future__ import print_function
 import RPi.GPIO as GPIO
 import time
 import pygame
+from datetime import datetime
 
 pygame.init()
 sound = pygame.mixer.Sound("roar.wav")
 
-print("hello world")
+print("hello dino")
 GPIO.setmode(GPIO.BCM)
 
-TRIGGER_DISTANCE_BOX = 48
-TRIGGER_DISTANCE_ROAR = 200
+TRIGGER_DISTANCE_BOX = 36
+TRIGGER_DISTANCE_ROAR = 80
 LIGHT1 = 2
 LIGHT2 = 27
 TRIG = 3
@@ -73,30 +74,42 @@ while True:
 	distance = pulse_duration * 17150
 	distance = round(distance, 2) / 2.54
 	if distance < TRIGGER_DISTANCE_BOX:
-		print("TRIGGER_DISTANCE_BOX")
+		print("Distance: %s in" % distance) 
+		print("TRIGGER_DISTANCE_BOX: %s" % datetime.now())
 		if not pygame.mixer.get_busy():
 			pygame.mixer.Sound.play(sound)
-		#pygame.mixer.music.stop()
+			pygame.mixer.music.stop()
 		#time.sleep(2.0)
 
+		print("start box: %s" % datetime.now())
 		# Momentary Switch
 		GPIO.output(BOX, True)
 		time.sleep(100e-3)
 		GPIO.output(BOX, False)
 
-		for i in range(25):
+		# Box on for this time
+		for i in range(20):
 			blink()
 
 		# Momentary Switch
 		GPIO.output(BOX, True)
 		time.sleep(100e-3)
 		GPIO.output(BOX, False)
+		print("end box: %s" % datetime.now())
+
+		# Lockout activation for time
+		for i in range(15):
+			blink()
+		print("end lockout: %s" % datetime.now())
 	elif distance < TRIGGER_DISTANCE_ROAR:
-		print("TRIGGER_DISTANCE_ROAR")
+		print("Distance: %s in" % distance) 
+		print("TRIGGER_DISTANCE_ROAR: %s" % datetime.now())
 		if not pygame.mixer.get_busy():
 			pygame.mixer.Sound.play(sound)
+			pygame.mixer.music.stop()
+		# Lockout for one second
 		for i in range(10):
 			blink()
-
-	print("Distance: %s in" % distance) 
-	time.sleep(50e-3)
+	else:
+		time.sleep(1e-3)
+	#print("Distance: %s in" % distance) 
